@@ -1,12 +1,19 @@
 package main
 
 import (
+	"crypto/sha256"
 	"encoding/base64"
 	"fmt"
+	"math/big"
 	"net/http"
-
 	"github.com/gin-gonic/gin"
 )
+
+func sha256Of(input string) []byte {
+	algo := sha256.New()
+	algo.Write([]byte(input))
+	return algo.Sum(nil)
+}
 
 type urlStruct struct {
 	LongURL  string `json:"longUrl"`
@@ -16,9 +23,12 @@ type urlStruct struct {
 var store = make(map[string]string)
 
 func Encode(msg string) string {
-	encoded := base64.URLEncoding.EncodeToString([]byte(msg))
+	urlHashBytes := sha256Of(msg)
+	generatedNumber := new(big.Int).SetBytes(urlHashBytes).Uint64()
+	encoded := base64.URLEncoding.EncodeToString([]byte(fmt.Sprintf("%d", generatedNumber)))
 	fmt.Println(encoded)
-	return encoded[:6]
+	host := "http://localhost:8080/"
+	return (host+encoded[:6])
 }
 
 func PostUrl(c *gin.Context) {
