@@ -28,8 +28,7 @@ func Encode(msg string) string {
 	generatedNumber := new(big.Int).SetBytes(urlHashBytes).Uint64()
 	encoded := base64.URLEncoding.EncodeToString([]byte(fmt.Sprintf("%d", generatedNumber)))
 	fmt.Println(encoded)
-	host := "http://localhost:8080/"
-	return (host+encoded[:6])
+	return encoded[:6]
 }
 
 func PostUrl(c *gin.Context) {
@@ -39,13 +38,13 @@ func PostUrl(c *gin.Context) {
 	if err := c.BindJSON(&newUrlStruct); err != nil {
 		return
 	}
-
+	host := "http://localhost:8080/"
 	// Add the new album to the slice.
 	if newUrlStruct.ShortURL != "" {
 		store[newUrlStruct.ShortURL] = newUrlStruct.LongURL
 	} else {
 		var shortUrl = Encode(newUrlStruct.LongURL)
-		newUrlStruct.ShortURL = shortUrl
+		newUrlStruct.ShortURL = host+shortUrl
 		store[shortUrl] = newUrlStruct.LongURL
 	}
 
