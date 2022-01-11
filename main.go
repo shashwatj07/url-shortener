@@ -9,6 +9,8 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+const host = "http://localhost:8080/"
+
 var algo = sha256.New()
 
 func sha256Of(input string) []byte {
@@ -37,7 +39,6 @@ func PostUrl(c *gin.Context) {
 	if err := c.BindJSON(&newUrlStruct); err != nil {
 		return
 	}
-	host := "http://localhost:8080/"
 	// Add the new album to the slice.
 	if newUrlStruct.ShortURL != "" {
 		store[newUrlStruct.ShortURL] = newUrlStruct.LongURL
