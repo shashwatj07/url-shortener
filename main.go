@@ -9,8 +9,9 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+var algo = sha256.New()
+
 func sha256Of(input string) []byte {
-	algo := sha256.New()
 	algo.Write([]byte(input))
 	return algo.Sum(nil)
 }
