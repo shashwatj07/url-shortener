@@ -1,12 +1,23 @@
 package main
 
 import (
+	"crypto/sha256"
 	"encoding/base64"
 	"fmt"
+	"math/big"
 	"net/http"
-
 	"github.com/gin-gonic/gin"
 )
+
+const hostUrl = "http://localhost:8080/"
+const hostPort = "localhost:8080"
+
+var algo = sha256.New()
+
+func sha256Of(input string) []byte {
+	algo.Write([]byte(input))
+	return algo.Sum(nil)
+}
 
 type urlStruct struct {
 	LongURL  string `json:"longUrl"`
@@ -16,8 +27,9 @@ type urlStruct struct {
 var store = make(map[string]string)
 
 func Encode(msg string) string {
-	encoded := base64.URLEncoding.EncodeToString([]byte(msg))
-	fmt.Println(encoded)
+	urlHashBytes := sha256Of(msg)
+	generatedNumber := new(big.Int).SetBytes(urlHashBytes).Uint64()
+	encoded := base64.URLEncoding.EncodeToString([]byte(fmt.Sprintf("%d", generatedNumber)))
 	return encoded[:6]
 }
 
@@ -28,13 +40,12 @@ func PostUrl(c *gin.Context) {
 	if err := c.BindJSON(&newUrlStruct); err != nil {
 		return
 	}
-
 	// Add the new album to the slice.
 	if newUrlStruct.ShortURL != "" {
 		store[newUrlStruct.ShortURL] = newUrlStruct.LongURL
 	} else {
 		var shortUrl = Encode(newUrlStruct.LongURL)
-		newUrlStruct.ShortURL = shortUrl
+		newUrlStruct.ShortURL = hostUrl+shortUrl
 		store[shortUrl] = newUrlStruct.LongURL
 	}
 
@@ -44,7 +55,6 @@ func PostUrl(c *gin.Context) {
 func HandleShortUrlRedirect(c *gin.Context) {
 	shortUrl := c.Param("shortUrl")
 	initialUrl := store[shortUrl]
-	fmt.Println(initialUrl)
 	c.Redirect(302, initialUrl)
 }
 
@@ -52,5 +62,5 @@ func main() {
 	router := gin.Default()
 	router.POST("/", PostUrl)
 	router.GET("/:shortUrl", HandleShortUrlRedirect)
-	router.Run("localhost:8080")
+	router.Run(hostPort)
 }
