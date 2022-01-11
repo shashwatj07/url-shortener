@@ -27,7 +27,6 @@ func Encode(msg string) string {
 	urlHashBytes := sha256Of(msg)
 	generatedNumber := new(big.Int).SetBytes(urlHashBytes).Uint64()
 	encoded := base64.URLEncoding.EncodeToString([]byte(fmt.Sprintf("%d", generatedNumber)))
-	fmt.Println(encoded)
 	return encoded[:6]
 }
 
@@ -54,7 +53,6 @@ func PostUrl(c *gin.Context) {
 func HandleShortUrlRedirect(c *gin.Context) {
 	shortUrl := c.Param("shortUrl")
 	initialUrl := store[shortUrl]
-	fmt.Println(initialUrl)
 	c.Redirect(302, initialUrl)
 }
 
