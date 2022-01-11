@@ -9,7 +9,8 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-const host = "http://localhost:8080/"
+const hostUrl = "http://localhost:8080/"
+const hostPort = "localhost:8080"
 
 var algo = sha256.New()
 
@@ -44,7 +45,7 @@ func PostUrl(c *gin.Context) {
 		store[newUrlStruct.ShortURL] = newUrlStruct.LongURL
 	} else {
 		var shortUrl = Encode(newUrlStruct.LongURL)
-		newUrlStruct.ShortURL = host+shortUrl
+		newUrlStruct.ShortURL = hostUrl+shortUrl
 		store[shortUrl] = newUrlStruct.LongURL
 	}
 
@@ -61,5 +62,5 @@ func main() {
 	router := gin.Default()
 	router.POST("/", PostUrl)
 	router.GET("/:shortUrl", HandleShortUrlRedirect)
-	router.Run("localhost:8080")
+	router.Run(hostPort)
 }
