@@ -3,6 +3,7 @@ Requirements:
 ```
 AWSCLI
 aws-sdk-go
+```
 
 
 Fire up the server:
