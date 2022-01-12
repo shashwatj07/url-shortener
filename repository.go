@@ -13,7 +13,6 @@ type dynamoDBRepo struct {
 
 type PostRepository interface {
 	Save(post *Urlpair) (*Urlpair, error)
-	FindAll() ([]Urlpair, error)
 	FindByID(id string) (*Urlpair, error)
 	Delete(post *Urlpair) error
 }
@@ -58,43 +57,14 @@ func (repo *dynamoDBRepo) Save(post *Urlpair) (*Urlpair, error) {
 	return post, err
 }
 
-func (repo *dynamoDBRepo) FindAll() ([]Urlpair, error) {
-	// Get a new DynamoDB client
-	dynamoDBClient := createDynamoDBClient()
 
-	// Build the query input parameters
-	params := &dynamodb.ScanInput{
-		TableName: aws.String(repo.tableName),
-	}
-
-	// Make the DynamoDB Query API call
-	result, err := dynamoDBClient.Scan(params)
-	if err != nil {
-		return nil, err
-	}
-	var posts []Urlpair = []Urlpair{}
-	for _, i := range result.Items {
-		post := Urlpair{}
-
-		err = dynamodbattribute.UnmarshalMap(i, &post)
-
-		if err != nil {
-			panic(err)
-		}
-		posts = append(posts, post)
-	}
-	return posts, nil
-}
-
-func (repo *dynamoDBRepo) FindByID(id string) (*Urlpair, error) {
-	// Get a new DynamoDB client
-	dynamoDBClient := createDynamoDBClient()
+func (repo *dynamoDBRepo) FindByID(short_url string) (*Urlpair, error) {
 
 	result, err := dynamoDBClient.GetItem(&dynamodb.GetItemInput{
 		TableName: aws.String(repo.tableName),
 		Key: map[string]*dynamodb.AttributeValue{
-			"id": {
-				N: aws.String(id),
+			"short_url": {
+				S: aws.String(short_url),
 			},
 		},
 	})
@@ -104,8 +74,9 @@ func (repo *dynamoDBRepo) FindByID(id string) (*Urlpair, error) {
 	post := Urlpair{}
 	err = dynamodbattribute.UnmarshalMap(result.Item, &post)
 	if err != nil {
-		panic(err)
+		return nil,err
 	}
+	println(post.LongURL)
 	return &post, nil
 }
 

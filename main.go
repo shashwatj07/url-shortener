@@ -42,18 +42,25 @@ func PostUrl(c *gin.Context) {
 		//custom shortURL
 	} else {
 		var shortUrl = Encode(newUrlStruct.LongURL)
+		var temp Urlpair = newUrlStruct
+		temp.ShortURL = shortUrl
 		newUrlStruct.ShortURL = hostUrl+shortUrl
-		repo.Save(&newUrlStruct)
+		// TO DO: X = Check if longUrl already exists and return that if it does
+		_,error := repo.Save(&temp)
+		if error!=nil {
+			panic(error)		// TO DO remove panic and try to send error as string in json below
+			c.AbortWithStatusJSON(500, gin.H{"error": error})
+		} else {
+			c.IndentedJSON(http.StatusCreated, newUrlStruct)
+		}
 	}
-
-	c.IndentedJSON(http.StatusCreated, newUrlStruct)
 }
 
 func HandleShortUrlRedirect(c *gin.Context) {
 	shortUrl := c.Param("shortUrl")
 	pair,error := repo.FindByID(shortUrl)
 	if error!=nil {
-		c.AbortWithStatusJSON(500, gin.H{"error": error})
+		c.AbortWithStatusJSON(500, gin.H{"error": error})	// TO DO error is currently returning empty, fix it
 	} else {
 		initialUrl := pair.LongURL
 		c.Redirect(302, initialUrl)
