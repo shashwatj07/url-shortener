@@ -1,17 +1,23 @@
-package repository
+package main
 
 import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/dynamodb"
 	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbattribute"
-
-	"github.com/shashwatj07/url-shortener/blob/dynamodb/entity.go"
 )
 
 type dynamoDBRepo struct {
 	tableName string
 }
+
+type PostRepository interface {
+	Save(post *Urlpair) (*Urlpair, error)
+	FindAll() ([]Urlpair, error)
+	FindByID(id string) (*Urlpair, error)
+	Delete(post *Urlpair) error
+}
+
 
 func NewDynamoDBRepository() PostRepository {
 	return &dynamoDBRepo{
@@ -29,7 +35,7 @@ func createDynamoDBClient() *dynamodb.DynamoDB {
 	return dynamodb.New(sess)
 }
 
-func (repo *dynamoDBRepo) Save(post *entity.Urlpair) (*entity.Urlpair, error) {
+func (repo *dynamoDBRepo) Save(post *Urlpair) (*Urlpair, error) {
 
 	// Transforms the post to map[string]*dynamodb.AttributeValue
 	attributeValue, err := dynamodbattribute.MarshalMap(post)
@@ -52,7 +58,7 @@ func (repo *dynamoDBRepo) Save(post *entity.Urlpair) (*entity.Urlpair, error) {
 	return post, err
 }
 
-func (repo *dynamoDBRepo) FindAll() ([]entity.Urlpair, error) {
+func (repo *dynamoDBRepo) FindAll() ([]Urlpair, error) {
 	// Get a new DynamoDB client
 	dynamoDBClient := createDynamoDBClient()
 
@@ -66,9 +72,9 @@ func (repo *dynamoDBRepo) FindAll() ([]entity.Urlpair, error) {
 	if err != nil {
 		return nil, err
 	}
-	var posts []entity.Urlpair = []entity.Urlpair{}
+	var posts []Urlpair = []Urlpair{}
 	for _, i := range result.Items {
-		post := entity.Urlpair{}
+		post := Urlpair{}
 
 		err = dynamodbattribute.UnmarshalMap(i, &post)
 
@@ -80,7 +86,7 @@ func (repo *dynamoDBRepo) FindAll() ([]entity.Urlpair, error) {
 	return posts, nil
 }
 
-func (repo *dynamoDBRepo) FindByID(id string) (*entity.Urlpair, error) {
+func (repo *dynamoDBRepo) FindByID(id string) (*Urlpair, error) {
 	// Get a new DynamoDB client
 	dynamoDBClient := createDynamoDBClient()
 
@@ -95,7 +101,7 @@ func (repo *dynamoDBRepo) FindByID(id string) (*entity.Urlpair, error) {
 	if err != nil {
 		return nil, err
 	}
-	post := entity.Urlpair{}
+	post := Urlpair{}
 	err = dynamodbattribute.UnmarshalMap(result.Item, &post)
 	if err != nil {
 		panic(err)
@@ -104,6 +110,6 @@ func (repo *dynamoDBRepo) FindByID(id string) (*entity.Urlpair, error) {
 }
 
 // Delete: TODO
-func (repo *dynamoDBRepo) Delete(post *entity.Urlpair) error {
+func (repo *dynamoDBRepo) Delete(post *Urlpair) error {
 	return nil
 }

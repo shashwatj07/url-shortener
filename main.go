@@ -5,8 +5,6 @@ import (
 	"encoding/base64"
 	"fmt"
 	"github.com/gin-gonic/gin"
-	"github.com/shashwatj07/url-shortener/blob/dynamodb/entity.go"
-	"github.com/shashwatj07/url-shortener/blob/dynamodb/repository.go"
 	"math/big"
 	"net/http"
 )
@@ -21,14 +19,8 @@ func sha256Of(input string) []byte {
 	return algo.Sum(nil)
 }
 
-type urlStruct struct {
-	LongURL  string `json:"longUrl"`
-	ShortURL string `json:"shortUrl"`
-}
-
-var store = make(map[string]string)
-repo = repository.NewDynamoDBRepository()
-dynamoDBClient := createDynamoDBClient()
+var repo = NewDynamoDBRepository()
+var dynamoDBClient = createDynamoDBClient()
 
 func Encode(msg string) string {
 	urlHashBytes := sha256Of(msg)
@@ -38,7 +30,7 @@ func Encode(msg string) string {
 }
 
 func PostUrl(c *gin.Context) {
-	var newUrlStruct entity.Urlpair
+	var newUrlStruct Urlpair
 
 	// Call BindJSON to bind the received JSON to newAlbum.
 	if err := c.BindJSON(&newUrlStruct); err != nil {
@@ -51,7 +43,7 @@ func PostUrl(c *gin.Context) {
 	} else {
 		var shortUrl = Encode(newUrlStruct.LongURL)
 		newUrlStruct.ShortURL = hostUrl+shortUrl
-		repo.Save(newUrlStruct)
+		repo.Save(&newUrlStruct)
 	}
 
 	c.IndentedJSON(http.StatusCreated, newUrlStruct)
@@ -59,11 +51,10 @@ func PostUrl(c *gin.Context) {
 
 func HandleShortUrlRedirect(c *gin.Context) {
 	shortUrl := c.Param("shortUrl")
-	pair,error = repo.FindByID(shortUrl)
+	pair,error := repo.FindByID(shortUrl)
 	if error!=nil {
 		c.AbortWithStatusJSON(500, gin.H{"error": error})
-	}
-	else{
+	} else {
 		initialUrl := pair.LongURL
 		c.Redirect(302, initialUrl)
 	}

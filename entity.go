@@ -1,6 +1,6 @@
-package entity
+package main
 
 type Urlpair struct {
-	ShortURL    string  `json:"short_url"`
-	LongURL  string `json:"long_url"`
+	ShortURL    string  `json:"shortUrl"`
+	LongURL  string `json:"longUrl"`
 }
