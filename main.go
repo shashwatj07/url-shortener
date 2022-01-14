@@ -4,9 +4,9 @@ import (
 	"crypto/sha256"
 	"encoding/base64"
 	"fmt"
+	"github.com/gin-gonic/gin"
 	"math/big"
 	"net/http"
-	"github.com/gin-gonic/gin"
 )
 
 const hostUrl = "http://localhost:8080/"
@@ -22,9 +22,11 @@ func sha256Of(input string) []byte {
 type urlStruct struct {
 	LongURL  string `json:"longUrl"`
 	ShortURL string `json:"shortUrl"`
+
 }
 
-var store = make(map[string]string)
+var repo = NewDynamoDBRepository()
+var dynamoDBClient = createDynamoDBClient()
 
 func Encode(msg string) string {
 	urlHashBytes := sha256Of(msg)
@@ -34,7 +36,7 @@ func Encode(msg string) string {
 }
 
 func PostUrl(c *gin.Context) {
-	var newUrlStruct urlStruct
+	var newUrlStruct Urlpair
 
 	// Call BindJSON to bind the received JSON to newAlbum.
 	if err := c.BindJSON(&newUrlStruct); err != nil {
@@ -42,20 +44,35 @@ func PostUrl(c *gin.Context) {
 	}
 	// Add the new album to the slice.
 	if newUrlStruct.ShortURL != "" {
-		store[newUrlStruct.ShortURL] = newUrlStruct.LongURL
+		//TO DO
+		//custom shortURL
 	} else {
 		var shortUrl = Encode(newUrlStruct.LongURL)
+		var temp Urlpair = newUrlStruct
+		temp.ShortURL = shortUrl
+		newUrlStruct.ShortURL = hostUrl+shortUrl
+		// TO DO: X = Check if longUrl already exists and return that if it does
+		_,error := repo.Save(&temp)
+		if error!=nil {
+			panic(error)		// TO DO remove panic and try to send error as string in json below
+			c.AbortWithStatusJSON(500, gin.H{"error": error})
+		} else {
+			c.IndentedJSON(http.StatusCreated, newUrlStruct)
+		}
 		newUrlStruct.ShortURL = hostUrl+shortUrl
 		store[shortUrl] = newUrlStruct.LongURL
 	}
-
-	c.IndentedJSON(http.StatusCreated, newUrlStruct)
 }
 
 func HandleShortUrlRedirect(c *gin.Context) {
 	shortUrl := c.Param("shortUrl")
-	initialUrl := store[shortUrl]
-	c.Redirect(302, initialUrl)
+	pair,error := repo.FindByID(shortUrl)
+	if error!=nil {
+		c.AbortWithStatusJSON(500, gin.H{"error": error})	// TO DO error is currently returning empty, fix it
+	} else {
+		initialUrl := pair.LongURL
+		c.Redirect(302, initialUrl)
+	}
 }
 
 func main() {
