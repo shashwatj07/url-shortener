@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"math/big"
 	"net/http"
+	"net/url"
+
 	"github.com/gin-gonic/gin"
 )
 
@@ -33,6 +35,11 @@ func Encode(msg string) string {
 	return encoded[:6]
 }
 
+func IsUrl(str string) bool {
+	u, err := url.ParseRequestURI(str)
+	return err == nil && u.Scheme != "" && u.Host != ""
+}
+
 func PostUrl(c *gin.Context) {
 	var newUrlStruct urlStruct
 
@@ -40,12 +47,18 @@ func PostUrl(c *gin.Context) {
 	if err := c.BindJSON(&newUrlStruct); err != nil {
 		return
 	}
-	// Add the new album to the slice.
+
+	// Check for malformed URL.
+	if !IsUrl(newUrlStruct.LongURL) {
+		panic("Malformed URL.")
+	}
+
+	// Add the new URL to the map.
 	if newUrlStruct.ShortURL != "" {
 		store[newUrlStruct.ShortURL] = newUrlStruct.LongURL
 	} else {
 		var shortUrl = Encode(newUrlStruct.LongURL)
-		newUrlStruct.ShortURL = hostUrl+shortUrl
+		newUrlStruct.ShortURL = hostUrl + shortUrl
 		store[shortUrl] = newUrlStruct.LongURL
 	}
 
