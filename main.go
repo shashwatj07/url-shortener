@@ -19,6 +19,12 @@ func sha256Of(input string) []byte {
 	return algo.Sum(nil)
 }
 
+type urlStruct struct {
+	LongURL  string `json:"longUrl"`
+	ShortURL string `json:"shortUrl"`
+
+}
+
 var repo = NewDynamoDBRepository()
 var dynamoDBClient = createDynamoDBClient()
 
@@ -53,6 +59,8 @@ func PostUrl(c *gin.Context) {
 		} else {
 			c.IndentedJSON(http.StatusCreated, newUrlStruct)
 		}
+		newUrlStruct.ShortURL = hostUrl+shortUrl
+		store[shortUrl] = newUrlStruct.LongURL
 	}
 }
 
