@@ -3,7 +3,7 @@ module github.com/shashwatj07/url-shortener
 go 1.17
 
 require (
-	github.com/aws/aws-sdk-go v1.42.32 // indirect
+	github.com/aws/aws-sdk-go v1.42.34 // indirect
 	github.com/gin-contrib/sse v0.1.0 // indirect
 	github.com/gin-gonic/gin v1.7.7 // indirect
 	github.com/go-playground/locales v0.13.0 // indirect

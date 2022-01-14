@@ -30,7 +30,9 @@ var dynamoDBClient = createDynamoDBClient()
 
 func Encode(msg string) string {
 	urlHashBytes := sha256Of(msg)
+	println(urlHashBytes)
 	generatedNumber := new(big.Int).SetBytes(urlHashBytes).Uint64()
+	println(generatedNumber)
 	encoded := base64.URLEncoding.EncodeToString([]byte(fmt.Sprintf("%d", generatedNumber)))
 	return encoded[:6]
 }
@@ -60,7 +62,6 @@ func PostUrl(c *gin.Context) {
 			c.IndentedJSON(http.StatusCreated, newUrlStruct)
 		}
 		newUrlStruct.ShortURL = hostUrl+shortUrl
-		store[shortUrl] = newUrlStruct.LongURL
 	}
 }
 
