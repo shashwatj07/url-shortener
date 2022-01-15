@@ -43,20 +43,19 @@ func IsUrl(str string) bool {
 func PostUrl(c *gin.Context) {
 	var newUrlStruct urlStruct
 
-	// Call BindJSON to bind the received JSON to newAlbum.
+	// Call BindJSON to bind the received JSON to newUrlStruct.
 	if err := c.BindJSON(&newUrlStruct); err != nil {
 		return
 	}
 
-	// Check for malformed URL.
 	if !IsUrl(newUrlStruct.LongURL) {
-		panic("Malformed URL.")
-	}
-
-	// Add the new URL to the map.
-	if newUrlStruct.ShortURL != "" {
+		// Malformed URL
+		newUrlStruct.ShortURL = "Malformed URL cannot be shortened."
+	} else if newUrlStruct.ShortURL != "" {
+		// Custom short link
 		store[newUrlStruct.ShortURL] = newUrlStruct.LongURL
 	} else {
+		// Random short link
 		var shortUrl = Encode(newUrlStruct.LongURL)
 		newUrlStruct.ShortURL = hostUrl + shortUrl
 		store[shortUrl] = newUrlStruct.LongURL
