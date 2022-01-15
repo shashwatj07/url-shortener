@@ -12,9 +12,8 @@ import (
 const hostUrl = "http://localhost:8080/"
 const hostPort = "localhost:8080"
 
-var algo = sha256.New()
-
 func sha256Of(input string) []byte {
+	var algo = sha256.New()
 	algo.Write([]byte(input))
 	return algo.Sum(nil)
 }
@@ -60,7 +59,6 @@ func PostUrl(c *gin.Context) {
 			c.IndentedJSON(http.StatusCreated, newUrlStruct)
 		}
 		newUrlStruct.ShortURL = hostUrl+shortUrl
-		store[shortUrl] = newUrlStruct.LongURL
 	}
 }
 
