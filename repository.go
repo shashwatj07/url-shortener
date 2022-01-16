@@ -31,7 +31,7 @@ func NewDynamoDBRepository() PostRepository {
 }
 
 // Create a DynamoDB client session
-// return: The new DynamoDB client session 
+// return: The new DynamoDB client session
 func createDynamoDBClient() *dynamodb.DynamoDB {
 	// Create AWS Session
 	sess := session.Must(session.NewSessionWithOptions(session.Options{
@@ -42,7 +42,7 @@ func createDynamoDBClient() *dynamodb.DynamoDB {
 	return dynamodb.New(sess)
 }
 
-// @param post: The long-short url pair and the expiry date
+// parameter post: The long-short url pair and the expiry date
 // The method is written for dynamoDBRepo struct. Save the new url entry pair and its expiry date in the database
 // return: url pair, expiry date and error if any
 func (repo *dynamoDBRepo) Save(post *urlStruct) (*urlStruct, error) {
@@ -68,8 +68,7 @@ func (repo *dynamoDBRepo) Save(post *urlStruct) (*urlStruct, error) {
 	return post, err
 }
 
-
-// @param short_url: The short url to search for in database
+// parameter short_url: The short url to search for in database
 // The method is written for dynamoDBRepo. Find item by id which is the short url
 // return: The url pair if found and error if any
 func (repo *dynamoDBRepo) FindByID(short_url string) (*urlStruct, error) {
