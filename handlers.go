@@ -39,10 +39,15 @@ func PostUrl(c *gin.Context) {
 	}
 	// Add the new album to the slice.
 	if newUrlStruct.ShortURL != "" {
-		//custom shortURL
+		// custom shortURL
+		if !IsAcceptableAlias(newUrlStruct.ShortURL) {
+			c.AbortWithStatusJSON(http.StatusExpectationFailed,
+				gin.H{"error": "Bad custom URL. Custom URL may only contain upto 32 letters, digits, underscore and hyphen symbols."})
+		}
+
 		var shortUrl string = newUrlStruct.ShortURL
 
-		//Check if the given custom URL is available
+		// Check if the given custom URL is available
 		pair, error := repo.FindByID(shortUrl)
 		if error != nil {
 			log.Println(error)
