@@ -10,22 +10,28 @@ import (
 var repo = NewDynamoDBRepository()
 var dynamoDBClient = createDynamoDBClient()
 
+// Struct to store table name
 type dynamoDBRepo struct {
 	tableName string
 }
 
+// Interface to specify the operations to be done on the database
 type PostRepository interface {
 	Save(post *urlStruct) (*urlStruct, error)
 	FindByID(id string) (*urlStruct, error)
 	Delete(post *urlStruct) error
 }
 
+// Instantiatethe dynamoDBRepo struct with the urlKV table
+// return: the struct instance
 func NewDynamoDBRepository() PostRepository {
 	return &dynamoDBRepo{
 		tableName: "urlKV",
 	}
 }
 
+// Create a DynamoDB client session
+// return: The new DynamoDB client session 
 func createDynamoDBClient() *dynamodb.DynamoDB {
 	// Create AWS Session
 	sess := session.Must(session.NewSessionWithOptions(session.Options{
@@ -36,6 +42,9 @@ func createDynamoDBClient() *dynamodb.DynamoDB {
 	return dynamodb.New(sess)
 }
 
+// @param post: The long-short url pair and the expiry date
+// The method is written for dynamoDBRepo struct. Save the new url entry pair and its expiry date in the database
+// return: url pair, expiry date and error if any
 func (repo *dynamoDBRepo) Save(post *urlStruct) (*urlStruct, error) {
 
 	// Transforms the post to map[string]*dynamodb.AttributeValue
@@ -59,6 +68,10 @@ func (repo *dynamoDBRepo) Save(post *urlStruct) (*urlStruct, error) {
 	return post, err
 }
 
+
+// @param short_url: The short url to search for in database
+// The method is written for dynamoDBRepo. Find item by id which is the short url
+// return: The url pair if found and error if any
 func (repo *dynamoDBRepo) FindByID(short_url string) (*urlStruct, error) {
 
 	result, err := dynamoDBClient.GetItem(&dynamodb.GetItemInput{

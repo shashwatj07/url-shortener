@@ -4,6 +4,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// Entrypoint of the program
 func main() {
 	SetupGoGuardian()
 	router := gin.Default()
