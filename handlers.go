@@ -8,6 +8,8 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// Utility function to handle the logic of saving short links
+// to the linked DynamoDB Instance along with the expiry time.
 func saveUrlToDbandRespond(c *gin.Context, newUrlStruct urlStruct, shortUrl string) {
 	var temp urlStruct = newUrlStruct
 	temp.ShortURL = shortUrl
@@ -30,6 +32,10 @@ func saveUrlToDbandRespond(c *gin.Context, newUrlStruct urlStruct, shortUrl stri
 	}
 }
 
+// Handles the POST request to shorten a link. Performs the
+// necessary sanity checks and properties to be followed according
+// to defined conventions. Responds with the appropriate error
+// or the short link in case of success.
 func PostUrl(c *gin.Context) {
 	var newUrlStruct urlStruct
 
@@ -75,6 +81,7 @@ func PostUrl(c *gin.Context) {
 	}
 }
 
+// Handler to handle short URL's redirection.
 func Redirect(c *gin.Context) {
 	shortUrl := c.Param("shortUrl")
 	pair, error := repo.FindByID(shortUrl)
@@ -93,6 +100,9 @@ func Redirect(c *gin.Context) {
 	}
 }
 
+// Middleware function to intercept the API request and
+// check if it is authorized to proceed. Aborts the request
+// if it is found to be unauthorized.
 func AuthorizationMiddleware() gin.HandlerFunc {
 	return gin.HandlerFunc(func(c *gin.Context) {
 		var w http.ResponseWriter = c.Writer
