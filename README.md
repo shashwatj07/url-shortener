@@ -3,7 +3,7 @@
 Fire up the server:
 ```
 go get .
-go run main.go entity.go repository.go auth.go handlers.go utils.go
+go run .
 ```
 
 GET Request (to generate Authorization Token):
