@@ -6,7 +6,10 @@ import (
 	"fmt"
 	"math/big"
 	"net/url"
+	"regexp"
 )
+
+var HasValidCustomLinkChars = regexp.MustCompile(`^[a-zA-Z0-9_-]+$`).MatchString
 
 func sha256Of(input string) []byte {
 	var algo = sha256.New()
@@ -24,4 +27,8 @@ func Encode(msg string) string {
 func IsUrl(str string) bool {
 	u, err := url.ParseRequestURI(str)
 	return err == nil && u.Scheme != "" && u.Host != ""
+}
+
+func IsAcceptableAlias(alias string) bool {
+	return HasValidCustomLinkChars(alias) && len(alias) <= 32
 }
