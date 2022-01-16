@@ -22,7 +22,7 @@ func CreateToken(c *gin.Context) {
 		"iss": "auth-app",
 		"sub": "cs559",
 		"aud": "any",
-		"exp": time.Now().Add(time.Hour * 24).Unix(),
+		"exp": time.Now().AddDate(0, 0, 30).Unix(),
 	})
 	jwtToken, _ := token.SignedString([]byte("secret"))
 	c.Writer.Write([]byte(jwtToken))
