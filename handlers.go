@@ -39,7 +39,7 @@ func MustBindWith(c *gin.Context, newUrlStruct *urlStruct) error {
 		return err
 	}
 	if newUrlStruct.ExpDate == 0 {
-		newUrlStruct.ExpDate = DefaultExpDate
+		newUrlStruct.ExpDate = DEFAULT_EXPIRY_DATE
 	}
 	if newUrlStruct.LongURL == "" {
 		return errors.New("long_url not provided or is empty")
@@ -62,7 +62,7 @@ func PostUrl(c *gin.Context) {
 	}
 	//check if ExpDate provided or not, if not set default
 	if newUrlStruct.ExpDate == 0 {
-		newUrlStruct.ExpDate = DefaultExpDate
+		newUrlStruct.ExpDate = DEFAULT_EXPIRY_DATE
 	}
 	// Add the new album to the slice.
 	if newUrlStruct.ShortURL != "" {

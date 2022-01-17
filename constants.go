@@ -7,4 +7,4 @@ const HOST_URL = "http://localhost:8080/"
 const HOST_PORT = "localhost:8080"
 
 // Default Expiry days
-const DefaultExpDate = 30
+const DEFAULT_EXPIRY_DATE = 30
