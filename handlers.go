@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"log"
 	"net/http"
 	"time"
@@ -32,6 +33,20 @@ func saveUrlToDbandRespond(c *gin.Context, newUrlStruct urlStruct, shortUrl stri
 	}
 }
 
+func MustBindWith(c *gin.Context, newUrlStruct *urlStruct) error {
+
+	if err := c.BindJSON(newUrlStruct); err != nil {
+		return err
+	}
+	if newUrlStruct.ExpDate == 0 {
+		newUrlStruct.ExpDate = DefaultExpDate
+	}
+	if newUrlStruct.LongURL == "" {
+		return errors.New("long_url not provided or is empty")
+	}
+	return nil
+}
+
 // Handles the POST request to shorten a link. Performs the
 // necessary sanity checks and properties to be followed according
 // to defined conventions. Responds with the appropriate error
@@ -40,8 +55,14 @@ func PostUrl(c *gin.Context) {
 	var newUrlStruct urlStruct
 
 	// Call BindJSON to bind the received JSON to newAlbum.
-	if err := c.BindJSON(&newUrlStruct); err != nil {
+	if err := MustBindWith(c, &newUrlStruct); err != nil {
+		c.AbortWithStatusJSON(http.StatusExpectationFailed,
+			gin.H{"error": err.Error()})
 		return
+	}
+	//check if ExpDate provided or not, if not set default
+	if newUrlStruct.ExpDate == 0 {
+		newUrlStruct.ExpDate = DefaultExpDate
 	}
 	// Add the new album to the slice.
 	if newUrlStruct.ShortURL != "" {
