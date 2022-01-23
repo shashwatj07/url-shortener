@@ -7,6 +7,7 @@ import (
 // Entrypoint of the program
 func main() {
 	SetupGoGuardian()
+	SetupSqlDbConnection()
 	router := gin.Default()
 	router.POST("/", AuthorizationMiddleware(), PostUrl)
 	router.GET("/:shortUrl", Redirect)
