@@ -78,6 +78,7 @@ func PostUrl(c *gin.Context) {
 		//If no custom url provided then create a random short url using sha256 and then save to database
 		var shortUrl = Encode(newUrlStruct.LongURL)
 		saveUrlToDbandRespond(c, newUrlStruct, shortUrl)
+		saveUrltoAnalyticsDB(newUrlStruct,shortUrl)
 	}
 }
 
@@ -93,6 +94,7 @@ func Redirect(c *gin.Context) {
 		if initialUrl != "" {
 			//redirect to origignal url
 			c.Redirect(302, initialUrl)
+			incrementRedirCount(shortUrl)
 		} else {
 			// Short url does not exist
 			c.AbortWithStatus(404)

@@ -6,10 +6,9 @@ import (
 	"database/sql"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"net/http"
-
-	// "github.com/aws/aws-sdk-go/aws/session"
-	// "github.com/aws/aws-sdk-go/service/rds/rdsutils"
+	"time"
 	"github.com/go-sql-driver/mysql"
 )
 
@@ -86,6 +85,54 @@ func ConnectToSqlDb() *sql.DB {
 	fmt.Println("ok")
 
 	return db
+}
+
+// Utility function to handle the logic of saving short links
+// to the linked Analytics DB Instance along with the expiry time.
+func saveUrltoAnalyticsDB(newUrlStruct urlStruct, shortUrl string) {
+	var temp urlStruct = newUrlStruct
+	temp.ShortURL = shortUrl
+	newUrlStruct.ShortURL = HOST_URL + shortUrl
+	days := newUrlStruct.ExpDate
+	// Expiry date period has to be at least one day
+	if days < 1 {
+		log.Printf("expiry date out of range")
+	} else {
+		TTL := time.Now().AddDate(0, 0, days).Format("2006-01-02 15:04:05") 
+		SQLStatement := "INSERT INTO urls (ShortUrl,TTL) VALUES ('" + shortUrl + "','" + TTL + "');"
+		_,err := db.Query(SQLStatement)
+		if err!=nil {
+			log.Printf(err.Error())
+		}
+	}
+}
+
+func incrementRedirCount(shortUrl string) {
+	curTime := time.Now().Format("2006-01-02")
+	SQLStatement := "SELECT COUNT(*) FROM CountPerDay WHERE ShortUrl='"+shortUrl+"' AND Date='"+ curTime +"';"
+	resp,err := db.Query(SQLStatement)
+	if err!=nil {
+		log.Printf(err.Error())
+	} else{
+		var count int
+		for resp.Next(){
+			resp.Scan(&count)
+			log.Printf("%d",count)
+		}
+		if count==0 {
+			SQLStatement = "INSERT INTO CountPerDay (ShortUrl,Date,Clicks) VALUES ('" + shortUrl + "','" + curTime + "',1);"
+			resp,err = db.Query(SQLStatement)
+			if err!=nil {
+				log.Printf(err.Error())
+			} 
+		} else {
+			SQLStatement = "UPDATE CountPerDay SET Clicks = Clicks + 1 WHERE ShortUrl='"+shortUrl+"' AND Date='"+curTime+"';"
+			resp,err = db.Query(SQLStatement)
+			if err!=nil {
+				log.Printf(err.Error())
+			}
+		}
+	}
 }
 
 func SetupSqlDbConnection() {
