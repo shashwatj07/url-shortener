@@ -11,6 +11,7 @@ func main() {
 	router := gin.Default()
 	router.POST("/", AuthorizationMiddleware(), PostUrl)
 	router.GET("/:shortUrl", Redirect)
+	router.GET("/analytics/:shortUrl", GetAnalytics)
 	router.GET("/auth/token", AuthorizationMiddleware(), CreateToken)
 	router.Run(HOST_PORT)
 }

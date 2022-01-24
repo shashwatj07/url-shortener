@@ -102,6 +102,24 @@ func Redirect(c *gin.Context) {
 	}
 }
 
+//Get Analytics for a url based on per day usage
+func GetAnalytics(c *gin.Context) {
+	shortUrl := c.Param("shortUrl")
+	analytics, error := GetAnalyticsFromDb(shortUrl)
+	if error != nil {
+		log.Println(error)
+		c.AbortWithStatus(500)
+	} else {
+		if analytics != nil {
+			c.IndentedJSON(http.StatusFound, analytics)
+		} else {
+			// Short url does not exist
+			c.AbortWithStatus(404)
+		}
+	}
+
+}
+
 // Middleware function to intercept the API request and
 // check if it is authorized to proceed. Aborts the request
 // if it is found to be unauthorized.
