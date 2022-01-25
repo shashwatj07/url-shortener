@@ -10,13 +10,13 @@ import (
 )
 
 // Utility function to handle the logic of saving short links
-// to the linked DynamoDB Instance along with the expiry time.
+// to the linked DynamoDB Instance along with the TTL.
 func saveUrlToDbandRespond(c *gin.Context, newUrlStruct urlStruct, shortUrl string) {
 	var temp urlStruct = newUrlStruct
 	temp.ShortURL = shortUrl
 	newUrlStruct.ShortURL = HOST_URL + shortUrl
 	days := newUrlStruct.ExpDate
-	// Expiry date period has to be at least one day
+	// Validity period has to be at least one day
 	if days < 1 {
 		c.AbortWithStatus(500)
 	} else {
@@ -39,7 +39,7 @@ func MustBindWith(c *gin.Context, newUrlStruct *urlStruct) error {
 		return err
 	}
 	if newUrlStruct.ExpDate == 0 {
-		newUrlStruct.ExpDate = DEFAULT_EXPIRY_DATE
+		newUrlStruct.ExpDate = DEFAULT_VALIDITY_DAYS
 	}
 	if newUrlStruct.LongURL == "" {
 		return errors.New("long_url not provided or is empty")
@@ -62,7 +62,7 @@ func PostUrl(c *gin.Context) {
 	}
 	//check if ExpDate provided or not, if not set default
 	if newUrlStruct.ExpDate == 0 {
-		newUrlStruct.ExpDate = DEFAULT_EXPIRY_DATE
+		newUrlStruct.ExpDate = DEFAULT_VALIDITY_DAYS
 	}
 	// Add the new album to the slice.
 	if newUrlStruct.ShortURL != "" {
@@ -121,7 +121,7 @@ func Redirect(c *gin.Context) {
 	}
 }
 
-// Handler to delete shortened urls from database before their expiry date
+// Handler to delete shortened urls from database before their validity ends
 func DeleteUrl(c *gin.Context) {
 	shortUrl := c.Param("shortUrl")
 	error := repo.Delete(shortUrl)
@@ -131,7 +131,6 @@ func DeleteUrl(c *gin.Context) {
 	} else {
 		c.Status(204)
 	}
-
 }
 
 // Middleware function to intercept the API request and
