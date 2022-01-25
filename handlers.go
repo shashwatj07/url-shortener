@@ -1,9 +1,12 @@
 package main
 
 import (
+	"encoding/csv"
 	"errors"
+	"fmt"
 	"log"
 	"net/http"
+	"strconv"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -60,7 +63,7 @@ func PostUrl(c *gin.Context) {
 			gin.H{"error": err.Error()})
 		return
 	}
-	//check if ExpDate provided or not, if not set default
+	// Check if ExpDate provided or not, if not set default
 	if newUrlStruct.ExpDate == 0 {
 		newUrlStruct.ExpDate = DEFAULT_VALIDITY_DAYS
 	}
@@ -151,4 +154,35 @@ func AuthorizationMiddleware() gin.HandlerFunc {
 		log.Printf("User %s Authenticated\n", user.UserName())
 		c.Next()
 	})
+}
+
+// Handler for bulk URL shortening from CSV.
+func PostBulkUrl(c *gin.Context) {
+	header, receiveErr := c.FormFile("file")
+	if receiveErr != nil {
+		c.AbortWithStatusJSON(http.StatusBadRequest,
+			gin.H{"error": "CSV file not provided."})
+	}
+	fmt.Println(header.Filename)
+	out, openErr := header.Open()
+	if openErr != nil {
+		c.AbortWithStatusJSON(http.StatusBadRequest,
+			gin.H{"error": "Unable to open file."})
+	}
+	csvLines, readErr := csv.NewReader(out).ReadAll()
+	if readErr != nil {
+		c.AbortWithStatusJSON(http.StatusExpectationFailed,
+			gin.H{"error": "File must be a CSV."})
+	}
+	responses := make([]urlStruct, len(csvLines))
+	for index, line := range csvLines {
+		longUrl := line[0]
+		alias := line[1]
+		validity, err := strconv.Atoi(line[2])
+		if err != nil {
+			validity = 30
+		}
+		responses[index] = PostUrlUtil(longUrl, alias, validity)
+	}
+	c.IndentedJSON(http.StatusAccepted, responses)
 }

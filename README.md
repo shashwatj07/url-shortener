@@ -33,4 +33,9 @@ DELETE Request (to delete a short link before it expires)
 curl http://localhost:8080/<random-hash|custom-alias> --request DELETE -H "Authorization: Bearer <auth_token>"
 ```
 
+POST Request (bulk shortening):
+```
+curl http://localhost:8080/bulk --request POST -F file="@test/test.csv" -H "Content-Type: multipart/form-data"
+```
+
 (Note: Replace localhost with public DNS entry for accessing hosted version on AWS. Current public DNS: ec2-65-0-130-180.ap-south-1.compute.amazonaws.com)
