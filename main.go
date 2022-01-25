@@ -12,5 +12,6 @@ func main() {
 	router.DELETE("/:shortUrl", AuthorizationMiddleware(), DeleteUrl)
 	router.GET("/:shortUrl", Redirect)
 	router.GET("/auth/token", AuthorizationMiddleware(), CreateToken)
+	router.POST("/bulk", PostBulkUrl)
 	router.Run(HOST_PORT)
 }
