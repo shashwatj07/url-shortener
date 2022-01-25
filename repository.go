@@ -19,7 +19,7 @@ type dynamoDBRepo struct {
 type PostRepository interface {
 	Save(post *urlStruct) (*urlStruct, error)
 	FindByID(id string) (*urlStruct, error)
-	Delete(post *urlStruct) error
+	Delete(id string) error
 }
 
 // Instantiatethe dynamoDBRepo struct with the urlKV table
@@ -93,7 +93,19 @@ func (repo *dynamoDBRepo) FindByID(short_url string) (*urlStruct, error) {
 	return &post, nil
 }
 
-// Delete: TODO
-func (repo *dynamoDBRepo) Delete(post *urlStruct) error {
-	return nil
+// parameter short_url: The short url to be deleted
+// The method is written for dynamoDBRepo. Delete item by id which is the short url
+// return: error if any
+func (repo *dynamoDBRepo) Delete(short_url string) error {
+	item := &dynamodb.DeleteItemInput{
+		TableName: aws.String(repo.tableName),
+		Key: map[string]*dynamodb.AttributeValue{
+			"short_url": {
+				S: aws.String(short_url),
+			},
+		},
+	}
+
+	_, err := dynamoDBClient.DeleteItem(item)
+	return err
 }
