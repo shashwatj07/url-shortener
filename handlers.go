@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"log"
 	"net/http"
 	"time"
@@ -9,13 +10,13 @@ import (
 )
 
 // Utility function to handle the logic of saving short links
-// to the linked DynamoDB Instance along with the expiry time.
+// to the linked DynamoDB Instance along with the TTL.
 func saveUrlToDbandRespond(c *gin.Context, newUrlStruct urlStruct, shortUrl string) {
 	var temp urlStruct = newUrlStruct
 	temp.ShortURL = shortUrl
 	newUrlStruct.ShortURL = HOST_URL + shortUrl
 	days := newUrlStruct.ExpDate
-	// Expiry date period has to be at least one day
+	// Validity period has to be at least one day
 	if days < 1 {
 		c.AbortWithStatus(500)
 	} else {
@@ -32,6 +33,20 @@ func saveUrlToDbandRespond(c *gin.Context, newUrlStruct urlStruct, shortUrl stri
 	}
 }
 
+func MustBindWith(c *gin.Context, newUrlStruct *urlStruct) error {
+
+	if err := c.BindJSON(newUrlStruct); err != nil {
+		return err
+	}
+	if newUrlStruct.ExpDate == 0 {
+		newUrlStruct.ExpDate = DEFAULT_VALIDITY_DAYS
+	}
+	if newUrlStruct.LongURL == "" {
+		return errors.New("long_url not provided or is empty")
+	}
+	return nil
+}
+
 // Handles the POST request to shorten a link. Performs the
 // necessary sanity checks and properties to be followed according
 // to defined conventions. Responds with the appropriate error
@@ -42,6 +57,10 @@ func PostUrl(c *gin.Context) {
 	// Call BindJSON to bind the received JSON to newAlbum.
 	if err := c.BindJSON(&newUrlStruct); err != nil {
 		return
+	}
+	//check if ExpDate provided or not, if not set default
+	if newUrlStruct.ExpDate == 0 {
+		newUrlStruct.ExpDate = DEFAULT_VALIDITY_DAYS
 	}
 	// Add the new album to the slice.
 	if newUrlStruct.ShortURL != "" {
@@ -117,7 +136,18 @@ func GetAnalytics(c *gin.Context) {
 			c.AbortWithStatus(404)
 		}
 	}
+}
 
+// Handler to delete shortened urls from database before their validity ends
+func DeleteUrl(c *gin.Context) {
+	shortUrl := c.Param("shortUrl")
+	error := repo.Delete(shortUrl)
+	if error != nil {
+		log.Println(error)
+		c.AbortWithStatus(500)
+	} else {
+		c.Status(204)
+	}
 }
 
 // Middleware function to intercept the API request and

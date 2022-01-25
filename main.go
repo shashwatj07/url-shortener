@@ -13,5 +13,6 @@ func main() {
 	router.GET("/:shortUrl", Redirect)
 	router.GET("/analytics/:shortUrl", AuthorizationMiddleware(), GetAnalytics)
 	router.GET("/auth/token", AuthorizationMiddleware(), CreateToken)
+	router.DELETE("/:shortUrl", AuthorizationMiddleware(), DeleteUrl)
 	router.Run(HOST_PORT)
 }
