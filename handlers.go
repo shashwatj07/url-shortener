@@ -55,7 +55,9 @@ func PostUrl(c *gin.Context) {
 	var newUrlStruct urlStruct
 
 	// Call BindJSON to bind the received JSON to newAlbum.
-	if err := c.BindJSON(&newUrlStruct); err != nil {
+	if err := MustBindWith(c, &newUrlStruct); err != nil {
+		c.AbortWithStatusJSON(http.StatusExpectationFailed,
+			gin.H{"error": err.Error()})
 		return
 	}
 	//check if ExpDate provided or not, if not set default
@@ -97,7 +99,6 @@ func PostUrl(c *gin.Context) {
 		//If no custom url provided then create a random short url using sha256 and then save to database
 		var shortUrl = Encode(newUrlStruct.LongURL)
 		saveUrlToDbandRespond(c, newUrlStruct, shortUrl)
-		saveUrltoAnalyticsDB(newUrlStruct,shortUrl)
 	}
 }
 
