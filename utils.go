@@ -46,12 +46,12 @@ func IsAcceptableAlias(alias string) bool {
 func SaveUrl(longUrl string, alias string, validity int) string {
 	var temp urlStruct
 	temp.ShortURL = alias
-	days := validity
+	temp.LongURL = longUrl
 	// Expiry date period has to be at least one day
 	if validity < 1 {
 		return "ERROR: Validity cannot be less than 1 day."
 	} else {
-		tempTime := time.Now().AddDate(0, 0, days)
+		tempTime := time.Now().AddDate(0, 0, validity)
 		temp.ExpDate = int(tempTime.Unix()) // Get the UNIX epoch timestamp
 		_, error := repo.Save(&temp)
 		if error != nil {
