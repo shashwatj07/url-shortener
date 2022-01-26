@@ -19,7 +19,7 @@ type dynamoDBRepo struct {
 type PostRepository interface {
 	Save(post *urlStruct) (*urlStruct, error)
 	FindByID(id string) (*urlStruct, error)
-	Delete(post string) error
+	Delete(id string) error
 }
 
 // Instantiatethe dynamoDBRepo struct with the urlKV table
