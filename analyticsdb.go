@@ -15,7 +15,7 @@ import (
 // Database object
 var db *sql.DB
 
-//Generate certificates for authentication in RDS SQL database
+// Generate certificates for authentication in RDS SQL database
 func RegisterRDSMysqlCerts(c *http.Client) error {
 	resp, err := c.Get("https://s3.amazonaws.com/rds-downloads/rds-combined-ca-bundle.pem")
 	if err != nil {
