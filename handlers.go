@@ -89,12 +89,8 @@ func PostUrl(c *gin.Context) {
 				// If custom url is available create a new entry with it
 				saveUrlToDbandRespond(c, newUrlStruct, shortUrl)
 				saveUrltoAnalyticsDB(newUrlStruct,shortUrl)
-			case newUrlStruct.LongURL:
-				// If custom url is already allocated for same long url then return the same
-				newUrlStruct.ShortURL = HOST_URL + shortUrl
-				c.IndentedJSON(http.StatusCreated, newUrlStruct)
 			default:
-				// If custom url is allocated to different long url return 409 Conflict status
+				// If custom url is allocated to a long url return 409 Conflict status
 				c.AbortWithStatusJSON(http.StatusConflict, gin.H{"error": "This Custom URL is not available"})
 			}
 		}
@@ -208,4 +204,10 @@ func PostBulkUrl(c *gin.Context) {
 		responses[index] = PostUrlUtil(longUrl, alias, validity)
 	}
 	c.IndentedJSON(http.StatusAccepted, responses)
+	// Add all urls to analyticsdb
+	lenr := len(responses)
+	for i:=0; i<lenr; i++ {
+		alias := csvLines[i][1]
+		saveUrltoAnalyticsDB(responses[i], alias)
+	}
 }
