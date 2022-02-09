@@ -14,7 +14,7 @@ curl http://localhost:8080/auth/token -u username:password
 
 GET Request (to get analytics for a url):
 ```
-curl http://localhost:8080/analytics/<random-hash|custom-alias> --include --header "Content-Type: application/json" --request "GET" -H "Authorization: Bearer <auth_token>"
+curl http://localhost:8080/analytics/<random-hash|custom-alias> -H "Authorization: Bearer <auth_token>"
 ```
 
 GET Request (to load shortened url):
