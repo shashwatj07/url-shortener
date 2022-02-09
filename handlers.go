@@ -88,12 +88,9 @@ func PostUrl(c *gin.Context) {
 			case "":
 				// If custom url is available create a new entry with it
 				saveUrlToDbandRespond(c, newUrlStruct, shortUrl)
-			case newUrlStruct.LongURL:
-				// If custom url is already allocated for same long url then return the same
-				newUrlStruct.ShortURL = HOST_URL + shortUrl
-				c.IndentedJSON(http.StatusCreated, newUrlStruct)
+				saveUrltoAnalyticsDB(newUrlStruct,shortUrl)
 			default:
-				// If custom url is allocated to different long url return 409 Conflict status
+				// If custom url is allocated to a long url return 409 Conflict status
 				c.AbortWithStatusJSON(http.StatusConflict, gin.H{"error": "This Custom URL is not available"})
 			}
 		}
@@ -102,6 +99,7 @@ func PostUrl(c *gin.Context) {
 		//If no custom url provided then create a random short url using sha256 and then save to database
 		var shortUrl = Encode(newUrlStruct.LongURL)
 		saveUrlToDbandRespond(c, newUrlStruct, shortUrl)
+		saveUrltoAnalyticsDB(newUrlStruct,shortUrl)
 	}
 }
 
@@ -115,8 +113,29 @@ func Redirect(c *gin.Context) {
 	} else {
 		initialUrl := pair.LongURL
 		if initialUrl != "" {
-			//redirect to origignal url
+			// Redirect to original url
 			c.Redirect(302, initialUrl)
+			incrementRedirCount(shortUrl)
+		} else {
+			// Short url does not exist
+			c.AbortWithStatus(404)
+		}
+	}
+}
+
+// Get Analytics for a url based on per day usage
+//
+// Returns a JSON response containing date and usage on that date if url is found else 404 
+func GetAnalytics(c *gin.Context) {
+	shortUrl := c.Param("shortUrl")
+	analytics, error := GetAnalyticsFromDb(shortUrl)
+	if error != nil {
+		log.Println(error)
+		c.AbortWithStatus(500)
+	} else {
+		if analytics != nil {
+			// Short url exists then return the analytics
+			c.IndentedJSON(http.StatusFound, analytics)
 		} else {
 			// Short url does not exist
 			c.AbortWithStatus(404)
@@ -185,4 +204,10 @@ func PostBulkUrl(c *gin.Context) {
 		responses[index] = PostUrlUtil(longUrl, alias, validity)
 	}
 	c.IndentedJSON(http.StatusAccepted, responses)
+	// Add all urls to analyticsdb
+	lenr := len(responses)
+	for i:=0; i<lenr; i++ {
+		alias := csvLines[i][1]
+		saveUrltoAnalyticsDB(responses[i], alias)
+	}
 }

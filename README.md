@@ -12,6 +12,11 @@ curl http://localhost:8080/auth/token -u username:password
 ```
 (Note: The validity period is 30 days for the bearer token generated)
 
+GET Request (to get analytics for a url):
+```
+curl http://localhost:8080/analytics/<random-hash|custom-alias> -H "Authorization: Bearer <auth_token>"
+```
+
 GET Request (to load shortened url):
 ```
 curl http://localhost:8080/<random-hash|custom-alias>
@@ -35,7 +40,7 @@ curl http://localhost:8080/<random-hash|custom-alias> --request DELETE -H "Autho
 
 POST Request (bulk shortening):
 ```
-curl http://localhost:8080/bulk --request POST -F file="@test/test.csv" -H "Content-Type: multipart/form-data"
+curl http://localhost:8080/bulk --request POST -F file="@test/test.csv" -H "Content-Type: multipart/form-data" -H "Authorization: Bearer <auth_token>"
 ```
 
 (Note: Replace localhost with public DNS entry for accessing hosted version on AWS. Current public DNS: ec2-65-0-130-180.ap-south-1.compute.amazonaws.com)
