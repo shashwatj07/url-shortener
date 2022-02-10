@@ -83,7 +83,8 @@ func PostUrlUtil(longUrl string, alias string, validity int) (result urlStruct) 
 				switch pair.LongURL {
 				case "":
 					// If custom url is available create a new entry with it
-					result.ShortURL = SaveUrl(longUrl, alias, validity)
+					go SaveUrl(longUrl, alias, validity)
+					result.ShortURL = HOST_URL + alias
 				case longUrl:
 					// If custom url is already allocated for same long url then return the same
 					result.ShortURL = HOST_URL + alias
@@ -96,7 +97,8 @@ func PostUrlUtil(longUrl string, alias string, validity int) (result urlStruct) 
 	} else {
 		// If no custom url provided then create a random short url using sha256 and then save to database
 		alias = Encode(longUrl)
-		result.ShortURL = SaveUrl(longUrl, alias, validity)
+		go SaveUrl(longUrl, alias, validity)
+		result.ShortURL = HOST_URL + alias
 	}
 	return result
 }

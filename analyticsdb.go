@@ -9,6 +9,7 @@ import (
 	"log"
 	"net/http"
 	"time"
+
 	"github.com/go-sql-driver/mysql"
 )
 
@@ -21,7 +22,6 @@ func RegisterRDSMysqlCerts(c *http.Client) error {
 	if err != nil {
 		return err
 	}
-
 
 	pem, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
@@ -44,21 +44,21 @@ func RegisterRDSMysqlCerts(c *http.Client) error {
 func ConnectToSqlDb() *sql.DB {
 	host := "url-analytics.c9iozcypz2w0.ap-south-1.rds.amazonaws.com"
 	user := "admin"
-    pass := "NfkD4EomFl5vQZXcmul0"
+	pass := "NfkD4EomFl5vQZXcmul0"
 	dbName := "url_analytics"
 
 	host = fmt.Sprintf("%s:%d", host, 3306)
 	cfg := &mysql.Config{
-		User: user,
-        Passwd: pass,
-		Addr: host,
-		Net:  "tcp",
+		User:   user,
+		Passwd: pass,
+		Addr:   host,
+		Net:    "tcp",
 		Params: map[string]string{
 			"tls": "rds",
 		},
-		DBName: dbName,
-        AllowNativePasswords: true,
-        AllowOldPasswords: true,
+		DBName:               dbName,
+		AllowNativePasswords: true,
+		AllowOldPasswords:    true,
 	}
 	cfg.AllowCleartextPasswords = true
 
@@ -94,10 +94,10 @@ func saveUrltoAnalyticsDB(newUrlStruct urlStruct, shortUrl string) {
 	if days < 1 {
 		log.Println("expiry date out of range")
 	} else {
-		TTL := time.Now().AddDate(0, 0, days).Format("2006-01-02 15:04:05") 
+		TTL := time.Now().AddDate(0, 0, days).Format("2006-01-02 15:04:05")
 		SQLStatement := "INSERT INTO urls (ShortUrl,TTL) VALUES ('" + shortUrl + "','" + TTL + "');"
-		_,err := db.Query(SQLStatement)
-		if err!=nil {
+		_, err := db.Query(SQLStatement)
+		if err != nil {
 			log.Println(err.Error())
 		}
 	}
@@ -106,26 +106,26 @@ func saveUrltoAnalyticsDB(newUrlStruct urlStruct, shortUrl string) {
 // Increment the count for the date when a url is visited
 func incrementRedirCount(shortUrl string) {
 	curTime := time.Now().Format("2006-01-02")
-	SQLStatement := "SELECT COUNT(*) FROM CountPerDay WHERE ShortUrl='"+shortUrl+"' AND Date='"+ curTime +"';"
-	resp,err := db.Query(SQLStatement)
-	if err!=nil {
+	SQLStatement := "SELECT COUNT(*) FROM CountPerDay WHERE ShortUrl='" + shortUrl + "' AND Date='" + curTime + "';"
+	resp, err := db.Query(SQLStatement)
+	if err != nil {
 		log.Println(err.Error())
-	} else{
+	} else {
 		var count int
-		for resp.Next(){
+		for resp.Next() {
 			resp.Scan(&count)
-			log.Printf("%d",count)
+			log.Printf("%d", count)
 		}
-		if count==0 {
+		if count == 0 {
 			SQLStatement = "INSERT INTO CountPerDay (ShortUrl,Date,Clicks) VALUES ('" + shortUrl + "','" + curTime + "',1);"
-			_,err = db.Query(SQLStatement)
-			if err!=nil {
+			_, err = db.Query(SQLStatement)
+			if err != nil {
 				log.Println(err.Error())
-			} 
+			}
 		} else {
-			SQLStatement = "UPDATE CountPerDay SET Clicks = Clicks + 1 WHERE ShortUrl='"+shortUrl+"' AND Date='"+curTime+"';"
-			_,err = db.Query(SQLStatement)
-			if err!=nil {
+			SQLStatement = "UPDATE CountPerDay SET Clicks = Clicks + 1 WHERE ShortUrl='" + shortUrl + "' AND Date='" + curTime + "';"
+			_, err = db.Query(SQLStatement)
+			if err != nil {
 				log.Println(err.Error())
 			}
 		}
@@ -140,18 +140,18 @@ func SetupSqlDbConnection() {
 // Get analytics from the sql db
 func GetAnalyticsFromDb(ShortUrl string) ([]DateCountStruct, error) {
 	var dateCountList []DateCountStruct
-	SQLStatement := "SELECT Date, Clicks FROM CountPerDay WHERE ShortUrl='"+ShortUrl+"';"
+	SQLStatement := "SELECT Date, Clicks FROM CountPerDay WHERE ShortUrl='" + ShortUrl + "';"
 	rows, err := db.Query(SQLStatement)
-	if err!=nil {
+	if err != nil {
 		log.Println(err.Error())
 		return nil, err
 	} else {
 		var count int
 		var date string
-		
-		for rows.Next(){
-			rows.Scan(&date,&count)
-			curDateCount := DateCountStruct{date,count}
+
+		for rows.Next() {
+			rows.Scan(&date, &count)
+			curDateCount := DateCountStruct{date, count}
 			dateCountList = append(dateCountList, curDateCount)
 		}
 	}
