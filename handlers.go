@@ -7,6 +7,7 @@ import (
 	"log"
 	"net/http"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -88,7 +89,7 @@ func PostUrl(c *gin.Context) {
 			case "":
 				// If custom url is available create a new entry with it
 				saveUrlToDbandRespond(c, newUrlStruct, shortUrl)
-				saveUrltoAnalyticsDB(newUrlStruct,shortUrl)
+				go saveUrltoAnalyticsDB(newUrlStruct, shortUrl)
 			default:
 				// If custom url is allocated to a long url return 409 Conflict status
 				c.AbortWithStatusJSON(http.StatusConflict, gin.H{"error": "This Custom URL is not available"})
@@ -99,7 +100,7 @@ func PostUrl(c *gin.Context) {
 		//If no custom url provided then create a random short url using sha256 and then save to database
 		var shortUrl = Encode(newUrlStruct.LongURL)
 		saveUrlToDbandRespond(c, newUrlStruct, shortUrl)
-		saveUrltoAnalyticsDB(newUrlStruct,shortUrl)
+		go saveUrltoAnalyticsDB(newUrlStruct, shortUrl)
 	}
 }
 
@@ -115,7 +116,7 @@ func Redirect(c *gin.Context) {
 		if initialUrl != "" {
 			// Redirect to original url
 			c.Redirect(302, initialUrl)
-			incrementRedirCount(shortUrl)
+			go incrementRedirCount(shortUrl)
 		} else {
 			// Short url does not exist
 			c.AbortWithStatus(404)
@@ -125,7 +126,7 @@ func Redirect(c *gin.Context) {
 
 // Get Analytics for a url based on per day usage
 //
-// Returns a JSON response containing date and usage on that date if url is found else 404 
+// Returns a JSON response containing date and usage on that date if url is found else 404
 func GetAnalytics(c *gin.Context) {
 	shortUrl := c.Param("shortUrl")
 	analytics, error := GetAnalyticsFromDb(shortUrl)
@@ -202,12 +203,7 @@ func PostBulkUrl(c *gin.Context) {
 			validity = 30
 		}
 		responses[index] = PostUrlUtil(longUrl, alias, validity)
+		go saveUrltoAnalyticsDB(responses[index], responses[index].ShortURL[strings.LastIndex(responses[index].ShortURL, "/")+1:])
 	}
 	c.IndentedJSON(http.StatusAccepted, responses)
-	// Add all urls to analyticsdb
-	lenr := len(responses)
-	for i:=0; i<lenr; i++ {
-		alias := csvLines[i][1]
-		saveUrltoAnalyticsDB(responses[i], alias)
-	}
 }
