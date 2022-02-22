@@ -7,6 +7,7 @@ import (
 	"log"
 	"net/http"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -202,7 +203,7 @@ func PostBulkUrl(c *gin.Context) {
 			validity = 30
 		}
 		responses[index] = PostUrlUtil(longUrl, alias, validity)
-		go saveUrltoAnalyticsDB(responses[index], alias)
+		go saveUrltoAnalyticsDB(responses[index], responses[index].ShortURL[strings.LastIndex(responses[index].ShortURL, "/")+1:])
 	}
 	c.IndentedJSON(http.StatusAccepted, responses)
 }
