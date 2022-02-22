@@ -85,9 +85,6 @@ func PostUrlUtil(longUrl string, alias string, validity int) (result urlStruct) 
 					// If custom url is available create a new entry with it
 					go SaveUrl(longUrl, alias, validity)
 					result.ShortURL = HOST_URL + alias
-				case longUrl:
-					// If custom url is already allocated for same long url then return the same
-					result.ShortURL = HOST_URL + alias
 				default:
 					// If custom url is allocated to different long url
 					result.ShortURL = "ERROR: Requested Custom URL is not available"
