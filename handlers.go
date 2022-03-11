@@ -119,10 +119,10 @@ func Redirect(c *gin.Context) {
 			log.Println(error)
 			c.AbortWithStatus(500)
 		} else {
-			initialUrl := pair.LongURL
-			if initialUrl != "" {
+			longURL = pair.LongURL
+			if longURL != "" {
 				// Redirect to original url
-				c.Redirect(302, initialUrl)
+				c.Redirect(302, longURL)
 				postCache.Set(shortUrl,longURL)
 				go incrementRedirCount(shortUrl)
 			} else {

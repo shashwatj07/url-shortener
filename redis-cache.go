@@ -43,7 +43,7 @@ func (cache *redisCache) Get(key string) (string, error) {
 
 	val, err := client.Get(key).Result()
 	if err != nil {
-		return "",nil
+		return "",err
 	}
 
 	post := ""
