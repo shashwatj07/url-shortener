@@ -35,8 +35,8 @@ func NewDynamoDBRepository() PostRepository {
 func createDynamoDBClient() *dynamodb.DynamoDB {
 	// Create AWS Session
 	sess := session.Must(session.NewSessionWithOptions(session.Options{
-		SharedConfigState: session.SharedConfigEnable,
 		Config: aws.Config{Region: aws.String("ap-south-1")},
+		SharedConfigState: session.SharedConfigEnable,
 	}))
 
 	// Return DynamoDB client
