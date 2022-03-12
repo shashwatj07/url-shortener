@@ -1,6 +1,6 @@
 # url-shortener
 
-Fire up the server:
+Fire up the server-
 ```
 go get .
 go run .
