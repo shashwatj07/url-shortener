@@ -8,7 +8,7 @@ go run .
 
 GET Request (to generate Authorization Token):
 ```
-curl http://localhost:8080/auth/token -u username:password
+curl http://url-shortener4-dev.ap-south-1.elasticbeanstalk.com/auth/token -u cs559:iitbh
 ```
 (Note: The validity period is 30 days for the bearer token generated)
 
@@ -24,7 +24,7 @@ curl http://localhost:8080/<random-hash|custom-alias>
 
 POST Request (to get random short link):
 ```
-curl http://url-shortener3-dev.ap-south-1.elasticbeanstalk.com/ --include --header "Content-Type: application/json" --request "POST" --data '{"long_url": "https://www.linkedin.com", "short_url": "", "exp_date": 31}' -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJhbnkiLCJleHAiOjE2NDgxODgwMTgsImlzcyI6ImF1dGgtYXBwIiwic3ViIjoiY3M1NTkifQ.WEYTfr9A0yndVIQRWBX4vgD7n6tkvQX2nh7eU1DgtLE"
+curl http://url-shortener4-dev.ap-south-1.elasticbeanstalk.com/ --include --header "Content-Type: application/json" --request "POST" --data '{"long_url": "https://www.linkedin.com", "short_url": "", "exp_date": 31}' -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJhbnkiLCJleHAiOjE2NDk2NTg0NjYsImlzcyI6ImF1dGgtYXBwIiwic3ViIjoiY3M1NTkifQ._JshleXML9zqsV4sDAtaoBhxKPldyE2MPw_2Fo8XjGw"
 ```
 
 POST Request (to get custom short link):
