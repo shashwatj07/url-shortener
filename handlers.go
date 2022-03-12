@@ -13,6 +13,11 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+var(
+	addr  =  []string{"url-cache-0001-001.ncfh49.0001.aps1.cache.amazonaws.com:6379", "url-cache-0001-002.ncfh49.0001.aps1.cache.amazonaws.com:6379","url-cache-0001-003.ncfh49.0001.aps1.cache.amazonaws.com:6379"}
+	postCache      PostCache           = NewRedisCache(addr, 0, 3600)
+)
+
 // Utility function to handle the logic of saving short links
 // to the linked DynamoDB Instance along with the TTL.
 func saveUrlToDbandRespond(c *gin.Context, newUrlStruct urlStruct, shortUrl string) {
@@ -107,21 +112,29 @@ func PostUrl(c *gin.Context) {
 // Handler to handle short URL's redirection.
 func Redirect(c *gin.Context) {
 	shortUrl := c.Param("shortUrl")
-	pair, error := repo.FindByID(shortUrl)
-	if error != nil {
-		log.Println(error)
-		c.AbortWithStatus(500)
-	} else {
-		initialUrl := pair.LongURL
-		if initialUrl != "" {
-			// Redirect to original url
-			c.Redirect(302, initialUrl)
-			go incrementRedirCount(shortUrl)
+	longURL, err := postCache.Get(shortUrl)
+	if err !=nil{
+		pair, error := repo.FindByID(shortUrl)
+		if error != nil {
+			log.Println(error)
+			c.AbortWithStatus(500)
 		} else {
-			// Short url does not exist
-			c.AbortWithStatus(404)
+			longURL = pair.LongURL
+			if longURL != "" {
+				// Redirect to original url
+				c.Redirect(302, longURL)
+				postCache.Set(shortUrl,longURL)
+				go incrementRedirCount(shortUrl)
+			} else {
+				// Short url does not exist
+				c.AbortWithStatus(404)
+			}
 		}
+	} else {
+		c.Redirect(302, longURL)
+		go incrementRedirCount(longURL)
 	}
+	
 }
 
 // Get Analytics for a url based on per day usage
