@@ -1,9 +1,9 @@
 branch-defaults:
-  demo:
-    environment: url-shortener3-dev
+  deploy:
+    environment: url-shortener4-dev
     group_suffix: null
 global:
-  application_name: url-shortener3
+  application_name: url-shortener4
   branch: null
   default_ec2_keyname: null
   default_platform: Go 1 running on 64bit Amazon Linux 2
